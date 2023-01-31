@@ -75,8 +75,6 @@ formChat.addEventListener('submit', e => {
         hora: '[' + hora.toLocaleString() + ']'
     }
 
-    console.log(message);
-
     socket.emit('update-chat', message);
     document.getElementById('chat-msg').value = '';
 })

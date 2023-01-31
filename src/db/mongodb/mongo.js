@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import * as models from "./config/models.js";
 
-const URL = 'mongodb+srv://ulisesmontenegro:Dragonci170605@backendpractice.enqgm9k.mongodb.net/DatabaseDesafio9?retryWrites=true&w=majority';
-
 export class Mongo {
     async getMsg () {
         let data;
@@ -26,7 +24,7 @@ export class Mongo {
 mongoose.Promise = global.Promise;
 
 export const connect = async () => {
-    mongoose.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true });
+    mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
 
     const db = mongoose.connection;
     db.on("error", () => {

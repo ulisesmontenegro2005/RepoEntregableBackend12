@@ -12,6 +12,8 @@ import { ProductsOptions } from './src/db/sqlite3/connection/connection.js';
 import ProductsClienteSQL from './src/db/sqlite3/classes/ProductsClass.js';
 import parseArgs from 'minimist';
 import { fork } from 'child_process'
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
@@ -38,7 +40,6 @@ passport.use('register', new LocalStrategy({ passReqToCallback: true }, async (r
         return done(null, false, 'That user has already register')
     }
 
-    console.log(req.session);
     const newUser = await UserModel.create({username,password,email})
 
     done(null, newUser);
@@ -133,21 +134,22 @@ io.on('connection', socket => {
         dbClass.getMsg()
         .then(d => {
             socket.emit('messages', d)
-            socket.on('update-chat', async data => {
-            
-                dbClass.addMsgMongo(data)
-
-                dbClass.getMsg()
-                .then(data2 => {
-                    io.sockets.emit('messages', data2)
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-            })
         })
         .catch(err => {
             console.log(err);
+        })
+
+        socket.on('update-chat', async data => {
+            
+            dbClass.addMsgMongo(data)
+
+            dbClass.getMsg()
+            .then(data2 => {
+                io.sockets.emit('messages', data2)
+            })
+            .catch(err => {
+                console.log(err);
+            })
         })
 })
 
@@ -202,9 +204,11 @@ app.get('/logout', (req, res) => {
 })
 
 app.get('/get-data', async (req, res) => {
-    const username = req.session.passport.user;
+    if (!req.session.passport.user) {
+        return res.redirect('/')
+    }
 
-    const user = await UserModel.findOne({'username': username}, {__v: 0, _id: 0, password: 0});
+    const user = await UserModel.findOne({'username': req.session.passport.user}, {__v: 0, _id: 0, password: 0});
 
     res.send({user, contador: req.session.contador})
 })
